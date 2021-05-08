@@ -17,8 +17,18 @@ func main() {
 	log.Printf("Starting up on http://localhost:%s", port)
 
 	r := chi.NewRouter()
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		JSON(w, map[string]string{"hello": "world"})
+	r.Get("/key/{key}", func(w http.ResponseWriter, r http.Request) {
+		key := chi.URLParam(r, "key")
+
+		data, err := Get(r.Context() , key)
+		if err != nil {
+			w.writeHeader(http.StatusInternalServerError)
+			JSON(w, map[string]string{"error", err.Error()})
+			return
+		}
+		w.writer([]byte(data))
+	}
+
 	})
 
 	log.Fatal(http.ListenAndServe(":"+port, r))
