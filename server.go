@@ -17,20 +17,50 @@ func main() {
 	log.Printf("Starting up on http://localhost:%s", port)
 
 	r := chi.NewRouter()
-	r.Get("/key/{key}", func(w http.ResponseWriter, r http.Request) {
+	r.Get("/key/{key}", func(w http.ResponseWriter, r *http.Request) {
 		key := chi.URLParam(r, "key")
-
-		data, err := Get(r.Context() , key)
+	
+		data, err := Get(r.Context(), key)
 		if err != nil {
-			w.writeHeader(http.StatusInternalServerError)
-			JSON(w, map[string]string{"error", err.Error()})
+			w.WriteHeader(http.StatusInternalServerError)
+			JSON(w, map[string]string{"error": err.Error()})
 			return
 		}
-		w.writer([]byte(data))
-	}
-
+	
+		w.Write([]byte(data))
 	})
 
+	r.Delete("/key/{key}", func(w http.ResponseWriter, r *http.Request) {
+		key := chi.URLParam(r, "key")
+	
+		err := Delete(r.Context(), key)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			JSON(w, map[string]string{"error": err.Error()})
+			return
+		}
+	
+		JSON(w, map[string]string{"status": "success"})
+	})
+
+	r.Post("/key/{key}", func (w http/ResponseWriter, r *http.Request){
+		key := chi.URLParam(r, "key")
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			JSON(w, map[string]string{"error": err.Error()})
+			return
+		}
+
+
+		err = Set(r.Content(), key, string(body))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			JSON(w, map[string]string{"error": err.Error()})
+			return
+		}
+	JSON(w, map[string]string{"status", "success"})
+	})
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
