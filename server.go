@@ -8,6 +8,10 @@ import (
 	"github.com/go-chi/chi"
 )
 
+
+
+var data = map[string]string{}
+
 func main() {
 	// Get port from env variables or set to 8080.
 	port := "8080"
@@ -74,4 +78,20 @@ func JSON (w http.ResponseWriter, data interface {}) {
 		return
 	}
 	w.Write(b)
+}
+
+
+func Set(ctx context.Context, key, value string) error {
+	data[key] = value
+	return nil
+}
+
+func Get(ctx context.Context, key string) (string, error) {
+	return data[key], nil
+}
+
+func Delete(ctx context.Context, key string) error {
+	delete(data, key)
+
+	return nil
 }
